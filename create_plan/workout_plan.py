@@ -1,5 +1,9 @@
 ##
 
+# basic PPL split. Feel free to add or remove days, and add or remove exercises
+# (check exercise_ids.json for options!)
+# exercises with "one_rm" entries are progressively overloaded
+# according to gen_mesocycle.py
 working_days = {
 "Push": {
     "Bench Press (Dumbbell)": {"one_rm": 0, "note": "push it to the limit!"},
@@ -10,11 +14,6 @@ working_days = {
     "Lat Pulldown (Cable)": {"one_rm": 0},
     "Bent Over Row (Dumbbell)": {"one_rm": 0},
     "Hammer Curl (Dumbbell)": {"reps": (8, 12), "rest_seconds": 120},
-    
-    "Hip Thrust (Smith Machine)": {"reps": (8, 12), "rest_seconds": 60},
-    "Standing Calf Raise (Machine)": {"reps": (8, 12), "rest_seconds": 60},
-    "Face Pull": {"reps": (8, 12), "rest_seconds": 60, "superset_id": 1},
-    "Cable Crunch": {"reps": (8, 12), "rest_seconds": 60, "superset_id": 1},
     },
 "Legs": {
     "Squat (Dumbbell)": {"one_rm": 0},
@@ -43,4 +42,5 @@ if __name__ == "__main__":
     # vol, freq = cp.analyze_program_sets(plan["W3"], gm.load_templates()) # look at week 3 for reference
     # import json
     # print('Volume:', json.dumps(vol, indent=4))
+
     # print('Frequency:', json.dumps(freq, indent=4))
