@@ -6,7 +6,7 @@ BASE = "https://api.hevyapp.com"
 # ---------- ENV ----------
 
 def load_api_key(user):
-    with open(".env") as f:
+    with open("user_config/.env") as f:
         for line in f:
             if line.strip().startswith(user + "="):
                 return line.strip().split("=")[1]
@@ -46,13 +46,14 @@ def load_templates(key):
 
     while True:
         data = api(
-            api_key,
+            key,
             "GET",
-            f"/v1/exercise_templates?page={page}&pageSize=50"
+            f"/v1/exercise_templates?page={page}&pageSize=100"
         )
 
         for ex in data.get("exercise_templates", []):
-            out[ex["title"]] = ex["id"]
+            title = ex.pop("title")
+            out[title] = ex
 
         if page >= data.get("page_count", 1):
             break
@@ -65,7 +66,7 @@ def load_templates(key):
 #    return {t["title"]: t["id"] for t in data["exercise_templates"]}
 
 def load_onerms(user):
-    data = json.load(open("onerms.json"))
+    data = json.load(open("user_config/onerms.json"))
     out = {}
     for ex, dates in data[user].items():
         latest = max(dates.keys())
@@ -73,49 +74,121 @@ def load_onerms(user):
     return out
 
 def load_gym():
-    return json.load(open("gym_config.json"))
+    return json.load(open("user_config/gym_config.json"))
 
-# ---------- ROUNDING ----------
+# ---------- ROUNDING AND RESOLVING ----------
 
-def round_weight(name, weight, gym):
-    if "Dumbbell" in name:
-        return min(gym["dumbbell"]["increments"], key=lambda x: abs(x - weight/2)) * 2
-    if "Smith" in name:
-        bar = gym["smith"]["bar"]
-        per_side = (weight - bar) / 2
-        plate = min(gym["smith"]["plates"], key=lambda x: abs(x - per_side))
-        return bar + plate*2
+def resolve_implement(ex, equipment):
+    if "Dumbbell" in ex["name"] or equipment == "dumbbell":
+        if ex.get("single_implement", False):
+            return("db_single")
+        else:
+            return("db_double")
+    if "Smith" in ex["name"]:
+        return("smith")
+    if "Barbell" in ex["name"] or equipment == "barbell":
+        return("barbell")
+
+def resolve_weight(implement, raw_weight, gym):
+    if implement == "db_double":
+        per_hand = raw_weight / 2
+        choices = gym["dumbbell"]["increments"]
+        per = min(choices, key=lambda x: abs(x - per_hand))
+        total = per * 2
+        return total, {"type": "db_double", "per_hand": per}
+
+    if implement == "db_single":
+        choices = gym["dumbbell"]["increments"]
+        total = min(choices, key=lambda x: abs(x - raw_weight))
+        return total, {"type": "db_single", "total": total}
+
+    if implement in ["smith", "barbell"]:
+        bar = gym[implement]["bar"]
+        plates = sorted(gym[implement]["plates"], reverse=True)
+
+        per_side = (raw_weight - bar) / 2
+        remaining = per_side
+        used = []
+
+        for p in plates:
+            while remaining >= p - 1e-6:
+                used.append(p)
+                remaining -= p
+
+        actual_per_side = sum(used)
+        total = bar + actual_per_side * 2
+
+        return total, {
+            "type": implement,
+            "per_side": actual_per_side,
+            "plates": used
+        }
+
+    # fallback (machines etc.)
     inc = gym["default_increment"]
-    return round(weight / inc) * inc
+    total = round(raw_weight / inc) * inc
+    return total, {"type": "stack"}
 
 # ---------- BUILD ----------
 
-def build_sets(ex, week, one_rms, gym):
+def fmt_rest(sec):
+    if not sec:
+        return ""
+    if sec % 60 == 0:
+        return f"{sec//60} min"
+    return f"{sec} sec"
+
+def build_note(name, reps, total, raw, meta, rest, gym):
+    rest_txt = fmt_rest(rest)
+
+    if meta["type"] == "db_double":
+        return f"{reps} reps @ {total}kg total ({meta['per_hand']}kg each). Rounded from {raw}kg. Rest {rest_txt}."
+    if meta["type"] == "db_single":
+        return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
+    if meta["type"] in ["smith", "barbell"]:
+        plate_str = " + ".join(str(p) for p in meta["plates"]) or "none"
+        return (
+            f"{reps} reps @ {total}kg total "
+            f"(bar {gym['smith']['bar']} + {round(meta['per_side'],2)}/side). "
+            f"Plates/side: {plate_str}. Rest {rest_txt}."
+        )
+
+    return f"{reps} reps @ {total}kg. Rest {rest_txt}."
+
+def build_sets(ex, week, one_rms, gym, templates):
     sets = []
+    notes = []
+    main = ex.get("main", False)
+    equipment = templates[ex["name"]]["equipment"]
+    implement = resolve_implement(ex, equipment)
 
-    for s in week["sets"]:
-        out = {"type": s["type"]}
+    if main: # if main lift, do weekly progression
+        for s in week["sets"]:
+            out = {"type": s["type"]}
 
-        if "pct" in s:
-            rm = one_rms[ex["key"]]
-            raw = rm * s["pct"]
-            out["weight_kg"] = round_weight(ex["name"], raw, gym)
+            if "pct" in s:
+                rm = one_rms[ex["name"]]
+                raw = rm * s["pct"]
+                out["weight_kg"], meta = resolve_weight(implement, raw, gym)
 
-        if isinstance(s["reps"], list):
-            out["rep_range"] = {"start": s["reps"][0], "end": s["reps"][1]}
-        else:
-            out["reps"] = s["reps"]
+            if isinstance(s["reps"], list):
+                out["rep_range"] = {"start": s["reps"][0], "end": s["reps"][1]}
+                reps = f"{s['reps'][0]}-{s['reps'][1]}"
+            else:
+                out["reps"] = s["reps"]
+                reps = out["reps"]
 
-        sets.append(out)
+            note = build_note(ex["name"], reps, out["weight_kg"], raw, meta, s["rest_seconds"], gym)
 
-    # accessory override
-    if "sets" in ex and "reps" in ex:
+            notes.append(note)
+            sets.append(out)
+    else: # it's an accessory
         sets = [{
             "type": "normal",
             "reps": ex["reps"][0] if isinstance(ex["reps"], list) else ex["reps"]
         } for _ in range(ex["sets"])]
 
-    return sets
+    return sets, notes
 
 def build(plan, one_rms, templates, gym, folder_id):
     routines = []
@@ -125,12 +198,14 @@ def build(plan, one_rms, templates, gym, folder_id):
             exs = []
 
             for ex in exercises:
-                sets = build_sets(ex, week, one_rms, gym)
+                sets, notes = build_sets(ex, week, one_rms, gym, templates)
 
                 block = {
-                    "exercise_template_id": templates[ex["name"]],
-                    "sets": sets
+                    "exercise_template_id": templates[ex["name"]]["id"],
+                    "sets": sets,
                 }
+                if notes:
+                    block["notes"] = "\n".join(notes)
 
                 if "rest_seconds" in ex:
                     block["rest_seconds"] = ex["rest_seconds"]
@@ -156,9 +231,14 @@ def get_folder(key, name):
 
 def existing_map(key):
     out = {}
-    data = api(key, "GET", "/v1/routines")
-    for r in data["routines"]:
-        out[(r["folder_id"], r["title"])] = r["id"]
+    page = 1
+    while True:
+        data = api(key, "GET", f"/v1/routines?page={page}&pageSize=10")
+        for r in data["routines"]:
+            out[(r["folder_id"], r["title"])] = r["id"]
+        if page >= data.get("page_count", 1):
+            break
+        page += 1
     return out
 
 def upsert(key, routine, existing):
@@ -166,6 +246,7 @@ def upsert(key, routine, existing):
     body = {"routine": routine}
 
     if k in existing:
+        body["routine"].pop("folder_id") # can't have that on PUT for some reason...
         write(key, "PUT", f"/v1/routines/{existing[k]}", body)
         print("updated", routine["title"])
     else:
