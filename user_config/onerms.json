@@ -1,16 +1,19 @@
 {
   "you": {
     "Bench Press (Dumbbell)": {
-      "2026-05-01": 60,
-      "2026-06-01": 10
+      "2026-05-01": 50,
+      "2026-06-01": 60
     },
-    "Bent Over Row (Dumbbell)": {
-      "2026-05-01": 55
+    "Squat (Barbell)": {
+      "2026-05-01": 100
     }
   },
   "gym_bro": {
     "Bench Press (Dumbbell)": {
       "2026-05-01": 100
+    },
+    "Squat (Barbell)": {
+      "2026-05-01": 200
     }
   }
 }

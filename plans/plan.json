@@ -22,7 +22,8 @@
     "Monday": [
       {
         "name": "Bench Press (Dumbbell)",
-        "main": true
+        "main": true,
+        "implement": "db_double"
       },
       {
         "name": "Push Up",
@@ -34,7 +35,8 @@
     "Tuesday": [
       {
         "name": "Squat (Barbell)",
-        "main": true
+        "main": true,
+        "implement": "barbell"
       },
       { 
         "name": "Dumbbell Step Up",

@@ -73,17 +73,6 @@ def load_gym():
 
 # ---------- ROUNDING AND RESOLVING ----------
 
-def resolve_implement(ex, equipment):
-    if "Dumbbell" in ex["name"] or equipment == "dumbbell":
-        if ex.get("single_implement", False):
-            return("db_single")
-        else:
-            return("db_double")
-    if "Smith" in ex["name"]:
-        return("smith")
-    if "Barbell" in ex["name"] or equipment == "barbell":
-        return("barbell")
-
 def resolve_weight(implement, raw_weight, gym):
     if implement == "db_double":
         per_hand = raw_weight / 2
@@ -97,7 +86,7 @@ def resolve_weight(implement, raw_weight, gym):
         total = min(choices, key=lambda x: abs(x - raw_weight))
         return total, {"type": "db_single", "total": total}
 
-    if implement in ["smith", "barbell"]:
+    if gym[implement].get("type") == "loadable_bar":
         bar = gym[implement]["bar"]
         plates = sorted(gym[implement]["plates"], reverse=True)
 
@@ -140,22 +129,23 @@ def build_note(name, reps, total, raw, meta, rest, gym):
         return f"{reps} reps @ {total}kg total ({meta['per_hand']}kg each). Rounded from {raw}kg. Rest {rest_txt}."
     if meta["type"] == "db_single":
         return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
-    if meta["type"] in ["smith", "barbell"]:
+    if gym[meta["type"]].get("type") == "loadable_bar":
         plate_str = " + ".join(str(p) for p in meta["plates"]) or "none"
         return (
             f"{reps} reps @ {total}kg total "
-            f"(bar {gym['smith']['bar']} + {round(meta['per_side'],2)}/side). "
+            f"(bar {gym[meta['type']]['bar']} + {round(meta['per_side'],2)}/side). "
+            f"Rounded from {raw}kg. "
             f"Plates/side: {plate_str}. Rest {rest_txt}."
         )
 
-    return f"{reps} reps @ {total}kg. Rest {rest_txt}."
+    return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
 
 def build_sets(ex, week, one_rms, gym, templates):
     sets = []
     notes = []
     main = ex.get("main", False)
     equipment = templates[ex["name"]]["equipment"]
-    implement = resolve_implement(ex, equipment)
+    implement = ex.get("implement")
 
     if main: # if main lift, do weekly progression
         for s in week["sets"]:
