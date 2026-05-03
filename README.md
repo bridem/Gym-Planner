@@ -5,7 +5,7 @@ Tool for doing periodisation in Hevy. e.g., follow a plan to lift a certain % of
 A Hevy Pro subscription is required to use Hevy's API. Once you have a Pro subscription, you can generate your Hevy API key in Settings -> Developer on the web app.
 
 Once you have done that, look at the files in user_config. These are specific to you and your gym. You can open and edit them in your favourite text editor (you can even use notepad).
-* .env will contain your Hevy API key, once you have generated it. Enter your name and corresponding Hevy API key here.
+* secrets.toml must contain your Hevy API key, once you have generated it. Enter your name and corresponding Hevy API key here.
 * onerms.json contains your estimated 1rm for each of your main lifts. If you don't know these, find out (safely)! TODO: code to automatically append to this from a Hevy exercise.
 * gym_config.json contains specifics about your gym. Enter all of the dumbbells available and bar weight and weight increments on the barbell / Smith machine.
 

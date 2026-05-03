@@ -1,15 +1,14 @@
-import json, os, time, requests
-from datetime import datetime
+import json, time, requests
 
 BASE = "https://api.hevyapp.com"
 
 # ---------- ENV ----------
 
 def load_api_key(user):
-    with open("user_config/.env") as f:
+    with open("user_config/secrets.toml") as f:
         for line in f:
-            if line.strip().startswith(user + "="):
-                return line.strip().split("=")[1]
+            if line.strip().startswith(user + " = "):
+                return line.strip().split(" = ")[1].replace('"','')
     raise Exception(f"No API key for {user}")
 
 # ---------- API ----------
@@ -60,10 +59,6 @@ def load_templates(key):
         page += 1
 
     return out
-
-#def load_templates():
-#    data = json.load(open("exercise_ids.json"))
-#    return {t["title"]: t["id"] for t in data["exercise_templates"]}
 
 def load_onerms(user):
     data = json.load(open("user_config/onerms.json"))
