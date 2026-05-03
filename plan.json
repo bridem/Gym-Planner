@@ -1,0 +1,36 @@
+{
+  "name": "Simple Strength Block",
+  "weeks": [
+    {
+      "name": "W1",
+      "sets": [
+        {"type": "normal", "pct": 0.65, "reps": 5},
+        {"type": "normal", "pct": 0.75, "reps": 5},
+        {"type": "failure", "pct": 0.80, "reps": [5, 10]}
+      ]
+    },
+    {
+      "name": "W2",
+      "sets": [
+        {"type": "normal", "pct": 0.70, "reps": 5},
+        {"type": "normal", "pct": 0.80, "reps": 5},
+        {"type": "failure", "pct": 0.85, "reps": [5, 10]}
+      ]
+    }
+  ],
+  "days": {
+    "Monday": [
+      {
+        "name": "Bench Press (Dumbbell)",
+        "key": "db_bench_press",
+        "rest_seconds": 120
+      },
+      {
+        "name": "Push Up",
+        "reps": [10, 15],
+        "sets": 3,
+        "rest_seconds": 60
+      }
+    ]
+  }
+}
