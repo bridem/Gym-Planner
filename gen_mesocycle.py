@@ -1,4 +1,4 @@
-import json, time, requests
+import json, yaml, time, requests
 
 BASE = "https://api.hevyapp.com"
 
@@ -69,24 +69,40 @@ def load_onerms(user):
     return out
 
 def load_gym():
-    return json.load(open("user_config/gym_config.json"))
+    with open('user_config/gym_config.yaml', 'r') as f:
+        return yaml.safe_load(f)
 
 # ---------- ROUNDING AND RESOLVING ----------
 
+def resolve_implement(ex, templates, gym_keys):
+    equipment = templates[ex["name"]]["equipment"]
+    if "Dumbbell" in ex["name"] or equipment == "dumbbell":
+        return("dumbbell_pair") # probably fair enough to assume it's a two-handed exercise
+    if "Barbell" in ex["name"] or equipment == "barbell":
+        return("barbell")
+    # dynamic matching:
+    for key in gym_keys:
+        if key.capitalize() in ex["name"]:
+            return key
+
+    return "default_increment"
+
 def resolve_weight(implement, raw_weight, gym):
-    if implement == "db_double":
+    implement_type = gym[implement]["type"]
+
+    if implement_type == 'one_per_hand':
         per_hand = raw_weight / 2
-        choices = gym["dumbbell"]["increments"]
+        choices = gym[implement]["increments"]
         per = min(choices, key=lambda x: abs(x - per_hand))
         total = per * 2
-        return total, {"type": "db_double", "per_hand": per}
+        return total, {"per_hand": per}
 
-    if implement == "db_single":
-        choices = gym["dumbbell"]["increments"]
+    if implement_type == 'single_weight':
+        choices = gym[implement]["increments"]
         total = min(choices, key=lambda x: abs(x - raw_weight))
-        return total, {"type": "db_single", "total": total}
+        return total, {}
 
-    if gym[implement].get("type") == "loadable_bar":
+    if implement_type == "loadable_bar":
         bar = gym[implement]["bar"]
         plates = sorted(gym[implement]["plates"], reverse=True)
 
@@ -103,15 +119,14 @@ def resolve_weight(implement, raw_weight, gym):
         total = bar + actual_per_side * 2
 
         return total, {
-            "type": implement,
             "per_side": actual_per_side,
             "plates": used
         }
 
-    # fallback (machines etc.)
-    inc = gym["default_increment"]
-    total = round(raw_weight / inc) * inc
-    return total, {"type": "stack"}
+    if implement_type == 'stack':
+        inc = gym[implement]["increments"]
+        total = round(raw_weight / inc) * inc
+        return total, {}
 
 # ---------- BUILD ----------
 
@@ -122,18 +137,21 @@ def fmt_rest(sec):
         return f"{sec//60} min"
     return f"{sec} sec"
 
-def build_note(name, reps, total, raw, meta, rest, gym):
+def build_note(name, reps, total, raw, implement, meta, rest, gym):
     rest_txt = fmt_rest(rest)
+    implement_type = gym[implement]["type"]
 
-    if meta["type"] == "db_double":
+    if implement_type == "one_per_hand":
         return f"{reps} reps @ {total}kg total ({meta['per_hand']}kg each). Rounded from {raw}kg. Rest {rest_txt}."
-    if meta["type"] == "db_single":
+
+    if implement_type == "single_weight":
         return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
-    if gym[meta["type"]].get("type") == "loadable_bar":
+
+    if implement_type == "loadable_bar":
         plate_str = " + ".join(str(p) for p in meta["plates"]) or "none"
         return (
             f"{reps} reps @ {total}kg total "
-            f"(bar {gym[meta['type']]['bar']} + {round(meta['per_side'],2)}/side). "
+            f"(bar {gym[implement]['bar']} + {round(meta['per_side'],2)}/side). "
             f"Rounded from {raw}kg. "
             f"Plates/side: {plate_str}. Rest {rest_txt}."
         )
@@ -144,8 +162,9 @@ def build_sets(ex, week, one_rms, gym, templates):
     sets = []
     notes = []
     main = ex.get("main", False)
-    equipment = templates[ex["name"]]["equipment"]
-    implement = ex.get("implement")
+    implement = ex.get("implement", None)
+    if not implement: # try guess what implement it is
+        implement = resolve_implement(ex, templates, gym.keys())
 
     if main: # if main lift, do weekly progression
         for s in week["sets"]:
@@ -163,7 +182,7 @@ def build_sets(ex, week, one_rms, gym, templates):
                 out["reps"] = s["reps"]
                 reps = out["reps"]
 
-            note = build_note(ex["name"], reps, out["weight_kg"], raw, meta, s["rest_seconds"], gym)
+            note = build_note(ex["name"], reps, out["weight_kg"], raw, implement, meta, s["rest_seconds"], gym)
 
             notes.append(note)
             sets.append(out)

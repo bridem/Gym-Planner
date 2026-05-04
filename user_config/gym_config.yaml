@@ -1,0 +1,34 @@
+dumbbell_pair:
+  type: one_per_hand
+  increments: &db_options [1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,22,24,26,28,30,32,34,36]
+
+dumbbell_single:
+  type: single_weight
+  increments: *db_options 
+
+kettlebell:
+  type: single_weight
+  increments: [2,4,6,8,10] 
+
+smith:
+  type: loadable_bar
+  bar: 11.3
+  plates: [1.25, 2.5, 5, 10, 20]
+
+barbell:
+  type: loadable_bar
+  bar: 20
+  plates: [1.25, 2.5, 5, 10, 20]
+
+leg_press:
+  type: loadable_bar
+  bar: 45,
+  plates: [1.25, 2.5, 5, 10, 20]
+
+cable:
+  type: stack,
+  increments: 2.5
+
+default_increment: 
+  type: stack
+  increments: 1.25

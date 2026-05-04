@@ -23,7 +23,7 @@
       {
         "name": "Bench Press (Dumbbell)",
         "main": true,
-        "implement": "db_double"
+        "implement": "dumbbell_pair"
       },
       {
         "name": "Push Up",
