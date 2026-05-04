@@ -61,7 +61,8 @@ def load_templates(key):
     return out
 
 def load_onerms(user):
-    data = json.load(open("user_config/onerms.json"))
+    with open('user_config/onerms.yaml', 'r') as f:
+        data = yaml.safe_load(f)
     out = {}
     for ex, dates in data[user].items():
         latest = max(dates.keys())
@@ -127,6 +128,8 @@ def resolve_weight(implement, raw_weight, gym):
         inc = gym[implement]["increments"]
         total = round(raw_weight / inc) * inc
         return total, {}
+
+    raise Exception("Invalid implement type, ", implement_type)
 
 # ---------- BUILD ----------
 
@@ -256,13 +259,14 @@ def upsert(key, routine, existing):
     else:
         write(key, "POST", "/v1/routines", body)
         print("created", routine["title"])
+    time.sleep(1)
 
 # ---------- MAIN ----------
 
 def main(plan_file, user):
     key = load_api_key(user)
-
-    plan = json.load(open(plan_file))
+    with open(plan_file, 'r') as f:
+        plan = yaml.safe_load(f)
     one_rms = load_onerms(user)
     templates = load_templates(key)
     gym = load_gym()

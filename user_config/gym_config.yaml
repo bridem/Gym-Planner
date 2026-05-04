@@ -22,11 +22,11 @@ barbell:
 
 leg_press:
   type: loadable_bar
-  bar: 45,
+  bar: 45
   plates: [1.25, 2.5, 5, 10, 20]
 
 cable:
-  type: stack,
+  type: stack
   increments: 2.5
 
 default_increment: 

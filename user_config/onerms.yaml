@@ -1,0 +1,18 @@
+you:
+  Bench Press (Dumbbell):
+    2026-05-01: 50
+    2026-06-01: 60
+  Squat (Barbell):
+    2026-05-01: 100
+  Leg Press (Machine):
+    2026-06-01: 180
+  Dumbbell Row:
+    2026-06-01: 30
+  Lat Pulldown (Cable):
+    2026-06-01: 70
+
+gym_bro:
+  Bench Press (Dumbbell):
+    2026-05-01: 100
+  Squat (Barbell):
+    2026-05-01: 200

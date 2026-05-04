@@ -1,0 +1,65 @@
+name: Terrible Plan (overwrite me!)
+weeks:
+  - name: W1
+    sets:
+      - type: normal
+        pct: 0.65
+        reps: 5
+        rest_seconds: 60
+      - type: normal
+        pct: 0.75
+        reps: 5
+        rest_seconds: 120
+      - type: failure
+        pct: 0.80
+        reps: [5, 10]
+        rest_seconds: 180
+  - name: W2
+    sets:
+      - type: normal
+        pct: 0.70
+        reps: 5
+        rest_seconds: 60
+      - type: normal
+        pct: 0.80
+        reps: 5
+        rest_seconds: 120
+      - type: failure
+        pct: 0.85
+        reps: [5, 10]
+        rest_seconds: 180
+days:
+  Monday:
+    - name: Bench Press (Dumbbell)
+      main: true
+      implement: dumbbell_pair
+    - name: Push Up
+      reps: [10, 15]
+      sets: 3
+      rest_seconds: 60
+  Tuesday:
+    - name: Squat (Barbell)
+      main: true
+      implement: barbell
+    - name: Dumbbell Step Up
+      reps: [10, 15]
+      sets: 3
+      rest_seconds: 60
+  Wednesday:
+    - name: Leg Press (Machine)
+      main: true
+      implement: leg_press
+    - name: Dumbbell Row
+      main: true
+      implement: dumbbell_single
+    - name: Seated Leg Curl (Machine)
+      reps: [10, 15]
+      sets: 3
+      rest_seconds: 60
+  Thursday:
+    - name: Lat Pulldown (Cable)
+      main: true
+    - name: Cable Crunch
+      reps: [10, 15]
+      sets: 3
+      rest_seconds: 60
