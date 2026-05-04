@@ -15,6 +15,7 @@ You can create your custom gym plans in the plans folder. A simplistic example i
 Once you have editted the user_config files and created your own plan, you must execute gen_mesocycle.py using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following two commands in your terminal:
 
 pip install pyyaml
+
 python gen_mesocycle.py plans/your_plan.json your_name
 
 Change the name of your_plan.json and your_name as appropriate.
