@@ -7,17 +7,18 @@ A Hevy Pro subscription is required to use Hevy's API. Once you have a Pro subsc
 
 Once you have done that, look at the files in user_config. These are specific to you and your gym. You can open and edit them in your favourite text editor (you can even use notepad).
 * secrets.toml must contain your Hevy API key, once you have generated it. Enter your name and corresponding Hevy API key here.
-* onerms.json contains your estimated 1rm for each of your main lifts. If you don't know these, find out (safely)! TODO: code to automatically append to this from a Hevy exercise.
-* gym_config.json contains specifics about weights available at your gym. Enter all of the dumbbells available and bar weight / weight increments for your barbell / Smith machine. You can also add your own implements if your gym has something different that you want as a main lift!
+* onerms.yaml contains your estimated 1rm for each of your main lifts. If you don't know these, find out (safely)! TODO: code to automatically append to this from a Hevy exercise.
+* gym_config.yaml contains specifics about weights available at your gym. Enter all of the dumbbells available and bar weight / weight increments for your barbell / Smith machine. You can also add your own implements if your gym has something different that you want as a main lift!
+* warmups.yaml contains templates for automatic warmup generation. These can be defined either as a percentage of your working set weight (which in turn is a percentage of your 1rm), or just as a percentage of your 1rm / training max. NOTE: if you want to warmup to a working set weight, you must specify which set is the working set in plan.yaml (which will be covered shortly)!
 
-You can create your custom gym plans in the plans folder. A simplistic example is already included (plan.json), detailing a simple periodisation for bench press and squats, and accessory work in the form of push-ups and step-ups. Use this file as a reference when creating your own plan(s). NOTE: you have to spell the exercise exactly the same way as Hevy does. Search for the exercise first in the Hevy app to find out its exact spelling! Also, you must specify the implement used (only for main lifts), corresponding to an entry gym_config.json, to use the rounding feature where exactly what weights to use are written in your Hevy notes for you. 
+You can then create your custom gym plan(s) in the plans folder. A simplistic example is already included (plan.yaml), detailing a simple periodisation for bench press and squats, and accessory work in the form of push-ups and step-ups. Use this file as a reference when creating your own plan(s). NOTE: you have to spell the exercise exactly the same way as Hevy does. Search for the exercise first in the Hevy app to find out its exact spelling! Also, you must specify the implement used (only for main lifts), corresponding to an entry gym_config.yaml, to use the rounding feature where exactly what weights to use are written in your Hevy notes for you. Here is also where you specify what warmup from warmups.yaml you want to use on your main lifts each week. You can also scale your 1rm down with the onerm_scale factor, e.g. if following a 5/3/1 template which uses "training max", defined as 85-90% of your 1rm, as a reference weight for your lifts.
 
 Once you have editted the user_config files and created your own plan, you must execute gen_mesocycle.py using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following two commands in your terminal:
 
 pip install pyyaml
 
-python gen_mesocycle.py plans/your_plan.json your_name
+python gen_mesocycle.py plans/your_plan.yaml your_name
 
-Change the name of your_plan.json and your_name as appropriate.
+Change the name of your_plan.yaml and your_name as appropriate.
 
 On some operating systems you may have to run python3 instead of python in the terminal.

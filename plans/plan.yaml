@@ -1,6 +1,9 @@
 name: Terrible Plan (overwrite me!)
+onerm_scale: 1
 weeks:
   - name: W1
+    warmup: standard_warmup
+    working_set: 3
     sets:
       - type: normal
         pct: 0.65
@@ -15,6 +18,8 @@ weeks:
         reps: [5, 10]
         rest_seconds: 180
   - name: W2
+    warmup: standard_warmup
+    working_set: 3
     sets:
       - type: normal
         pct: 0.70

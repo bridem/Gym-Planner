@@ -1,0 +1,24 @@
+standard_warmup:
+  mode: working_set
+  sets:
+    - pct: 0.5
+      reps: 7
+      rest_seconds: 60
+    - pct: 0.7
+      reps: 3
+      rest_seconds: 60
+    - pct: 1
+      reps: 1
+      rest_seconds: 60
+five_three_one:
+  mode: onerm_max
+  sets:
+    - pct: 0.4
+      reps: 5
+      rest_seconds: 60
+    - pct: 0.5
+      reps: 5
+      rest_seconds: 60
+    - pct: 0.6
+      reps: 3
+      rest_seconds: 60

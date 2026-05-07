@@ -73,6 +73,9 @@ def load_gym():
     with open('user_config/gym_config.yaml', 'r') as f:
         return yaml.safe_load(f)
 
+def load_warmups():
+    with open('user_config/warmups.yaml', 'r') as f:
+        return yaml.safe_load(f)
 # ---------- ROUNDING AND RESOLVING ----------
 
 def resolve_implement(ex, templates, gym_keys):
@@ -145,37 +148,72 @@ def build_note(name, reps, total, raw, implement, meta, rest, gym):
     implement_type = gym[implement]["type"]
 
     if implement_type == "one_per_hand":
-        return f"{reps} reps @ {total}kg total ({meta['per_hand']}kg each). Rounded from {raw}kg. Rest {rest_txt}."
+        return f"{reps} reps @ {total}kg total ({meta['per_hand']}kg each). Rounded from {raw:.1f}kg. Rest {rest_txt}."
 
     if implement_type == "single_weight":
-        return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
+        return f"{reps} reps @ {total}kg. Rounded from {raw:.1f}kg. Rest {rest_txt}."
 
     if implement_type == "loadable_bar":
         plate_str = " + ".join(str(p) for p in meta["plates"]) or "none"
         return (
             f"{reps} reps @ {total}kg total "
             f"(bar {gym[implement]['bar']} + {round(meta['per_side'],2)}/side). "
-            f"Rounded from {raw}kg. "
+            f"Rounded from {raw:.1f}kg. "
             f"Plates/side: {plate_str}. Rest {rest_txt}."
         )
 
-    return f"{reps} reps @ {total}kg. Rounded from {raw}kg. Rest {rest_txt}."
+    return f"{reps} reps @ {total}kg. Rounded from {raw:.1f}kg. Rest {rest_txt}."
 
-def build_sets(ex, week, one_rms, gym, templates):
+def build_warmups(warmup, ref_weight, ex, implement, gym):
+    sets = warmup["sets"]
+
+    out = []
+    notes = []
+    for w in sets:
+        raw = ref_weight * w["pct"]
+        total, meta = resolve_weight(implement, raw, gym)
+
+        out.append({
+            "type": "warmup",
+            "weight_kg": total,
+            "reps": w["reps"]
+        })
+
+        note = build_note(ex["name"], w["reps"], total, raw, implement, meta, w["rest_seconds"], gym)
+        notes.append(note)
+
+    return out, notes
+
+def build_sets(ex, week, one_rms, onerm_scale, gym, templates, warmups):
     sets = []
     notes = []
     main = ex.get("main", False)
     implement = ex.get("implement", None)
     if not implement: # try guess what implement it is
         implement = resolve_implement(ex, templates, gym.keys())
+    warmup_name = week.get("warmup", None)
+    if warmup_name:
+        warmup = warmups[warmup_name]
 
     if main: # if main lift, do weekly progression
+        onerm = one_rms[ex["name"]]
+        training_max = onerm * onerm_scale
+        if warmup_name: # if warmups have been defined in plan.yaml
+            if warmup["mode"] == "working_set":
+                working_set = week.get("working_set", 1)
+                working_pc = week["sets"][working_set-1]["pct"]
+                warmup_ref_weight = training_max * working_pc
+            else:
+                warmup_ref_weight = training_max
+            warmup_sets, warmup_notes = build_warmups(warmup, warmup_ref_weight, ex, implement, gym)
+            sets.extend(warmup_sets)
+            notes.extend(warmup_notes)
+
         for s in week["sets"]:
             out = {"type": s["type"]}
 
             if "pct" in s:
-                rm = one_rms[ex["name"]]
-                raw = rm * s["pct"]
+                raw = training_max * s["pct"]
                 out["weight_kg"], meta = resolve_weight(implement, raw, gym)
 
             if isinstance(s["reps"], list):
@@ -197,15 +235,18 @@ def build_sets(ex, week, one_rms, gym, templates):
 
     return sets, notes
 
-def build(plan, one_rms, templates, gym, folder_id):
+def build(plan, one_rms, templates, gym, warmups, folder_id):
     routines = []
+    onerm_scale = plan.get("onerm_scale", 1)
 
     for week in plan["weeks"]:
         for day, exercises in plan["days"].items():
             exs = []
 
             for ex in exercises:
-                sets, notes = build_sets(ex, week, one_rms, gym, templates)
+                sets, notes = build_sets(ex, week, one_rms, onerm_scale, gym, templates, warmups)
+
+
 
                 block = {
                     "exercise_template_id": templates[ex["name"]]["id"],
@@ -214,8 +255,16 @@ def build(plan, one_rms, templates, gym, folder_id):
                 if notes:
                     block["notes"] = "\n".join(notes)
 
+                # determine rest seconds. Either from exercise, or max from week!
                 if "rest_seconds" in ex:
                     block["rest_seconds"] = ex["rest_seconds"]
+
+                rest_seconds = -1
+                for s in week["sets"]: # get rest time from max rest_seconds
+                    rest_seconds = max(rest_seconds, s["rest_seconds"])
+
+                if rest_seconds > 0:
+                    block["rest_seconds"] = rest_seconds
 
                 exs.append(block)
 
@@ -270,11 +319,12 @@ def main(plan_file, user):
     one_rms = load_onerms(user)
     templates = load_templates(key)
     gym = load_gym()
+    warmups = load_warmups()
 
     folder = get_folder(key, plan["name"])
     existing = existing_map(key)
 
-    routines = build(plan, one_rms, templates, gym, folder)
+    routines = build(plan, one_rms, templates, gym, warmups, folder)
 
     for r in routines:
         upsert(key, r, existing)
