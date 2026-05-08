@@ -5,7 +5,7 @@ BASE = "https://api.hevyapp.com"
 # ---------- ENV ----------
 
 def load_api_key(user):
-    with open("user_config/secrets.toml") as f:
+    with open("user/secrets.toml") as f:
         for line in f:
             if line.strip().startswith(user + " = "):
                 return line.strip().split(" = ")[1].replace('"','')
@@ -61,7 +61,7 @@ def load_templates(key):
     return out
 
 def load_onerms(user):
-    with open('user_config/onerms.yaml', 'r') as f:
+    with open('user/onerms.yaml', 'r') as f:
         data = yaml.safe_load(f)
     out = {}
     for ex, dates in data[user].items():
@@ -70,11 +70,11 @@ def load_onerms(user):
     return out
 
 def load_gym():
-    with open('user_config/gym_config.yaml', 'r') as f:
+    with open('user/gym.yaml', 'r') as f:
         return yaml.safe_load(f)
 
 def load_warmups():
-    with open('user_config/warmups.yaml', 'r') as f:
+    with open('user/warmups.yaml', 'r') as f:
         return yaml.safe_load(f)
 # ---------- ROUNDING AND RESOLVING ----------
 
