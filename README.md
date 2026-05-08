@@ -19,12 +19,16 @@ Once you have done that, look at the files in user/. These are specific to you a
 
 You can then create your custom gym plan(s) in the user/plans folder. A simplistic example is already included (example_plan.yaml), detailing a simple periodisation for bench press and squats, and accessory work in the form of push-ups and step-ups. Use this file as a reference when creating your own plan(s). NOTE: you have to spell the exercise exactly the same way as Hevy does. Search for the exercise first in the Hevy app to find out its exact spelling! Also, you must specify the implement used (only for main lifts), corresponding to an entry gym.yaml, to use the rounding feature where exactly what weights to use are written in your Hevy notes for you. Here is also where you specify what warmup from warmups.yaml you want to use on your main lifts each week. You can also scale your 1rm down with the onerm_scale factor, e.g. if following a 5/3/1 template which uses "training max", defined as 85-90% of your 1rm, as a reference weight for your lifts.
 
-Once you have editted the user/ files and created your own plan in user/plans/, you must execute gen_mesocycle.py using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following two commands in your terminal:
+Once you have edited the user/ files and created your own plan in user/plans/, you must install pyyaml from pip to run the script:
 
 pip install pyyaml
+
+Finally, gen_mesocycle.py is ready to run! Execute the following command in your terminal:
 
 python gen_mesocycle.py user/plans/your_plan.yaml your_name
 
 Change the name of your_plan.yaml and your_name as appropriate, based on the name of the plan file in user/plans/ and your name as written in user/secrets.toml .
 
 On some operating systems you may have to run python3 instead of python in the terminal.
+
+From now on, you can just run python gen_mesocycle.py ... for new / updated plans.
