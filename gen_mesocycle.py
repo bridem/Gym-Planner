@@ -308,11 +308,16 @@ def upsert(key, routine, existing):
     else:
         write(key, "POST", "/v1/routines", body)
         print("created", routine["title"])
+    exercise = sys.argv[2]
     time.sleep(1)
 
 # ---------- MAIN ----------
 
-def main(plan_file, user):
+if __name__ == "__main__":
+    import sys
+    plan_file = sys.argv[1]
+    user = sys.argv[2]
+
     key = load_api_key(user)
     with open(plan_file, 'r') as f:
         plan = yaml.safe_load(f)
@@ -328,7 +333,3 @@ def main(plan_file, user):
 
     for r in routines:
         upsert(key, r, existing)
-
-if __name__ == "__main__":
-    import sys
-    main(sys.argv[1], sys.argv[2])

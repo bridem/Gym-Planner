@@ -1,7 +1,7 @@
 # Gym-Planner
 Tool for doing periodisation in Hevy. e.g., follow a plan to lift a certain % of 1rm every week for a set of main lifts
 
-*How to use?*
+**How to use?**
 
 A Hevy Pro subscription is required to use Hevy's API. Once you have a Pro subscription, you can generate your Hevy API key in Settings -> Developer on the web app.
 
@@ -9,7 +9,7 @@ First, you must clone or download this repository to somewhere on your computer.
 
 Once you have downloaded the repo, you must set up the app using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following command in your terminal (all operating systems come with terminals) in the location of the downloaded repo:
 
-python configure.py
+*python configure.py*
 
 Once you have done that, look at the files in user/. These are specific to you and your gym. You can open and edit them in your favourite text editor (you can even use notepad).
 * secrets.toml must contain your Hevy API key, once you have generated it. Enter your name and corresponding Hevy API key here.
@@ -21,14 +21,14 @@ You can then create your custom gym plan(s) in the user/plans folder. A simplist
 
 Once you have edited the user/ files and created your own plan in user/plans/, you must install pyyaml from pip to run the script:
 
-pip install pyyaml
+*pip install pyyaml*
 
 Finally, gen_mesocycle.py is ready to run! Execute the following command in your terminal:
 
-python gen_mesocycle.py user/plans/your_plan.yaml your_name
+*python gen_mesocycle.py user/plans/your_plan.yaml your_name*
 
 Change the name of your_plan.yaml and your_name as appropriate, based on the name of the plan file in user/plans/ and your name as written in user/secrets.toml .
 
 On some operating systems you may have to run python3 instead of python in the terminal.
 
-From now on, you can just run python gen_mesocycle.py ... for new / updated plans.
+From now on, you can just run *python gen_mesocycle.py ...* for new / updated plans.
