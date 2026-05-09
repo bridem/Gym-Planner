@@ -245,8 +245,7 @@ def build(plan, one_rms, templates, gym, warmups, folder_id):
 
             for ex in exercises:
                 sets, notes = build_sets(ex, week, one_rms, onerm_scale, gym, templates, warmups)
-
-
+                ss_id = ex.get("superset_id", None)
 
                 block = {
                     "exercise_template_id": templates[ex["name"]]["id"],
@@ -255,16 +254,20 @@ def build(plan, one_rms, templates, gym, warmups, folder_id):
                 if notes:
                     block["notes"] = "\n".join(notes)
 
+                if ss_id:
+                    block["superset_id"] = ss_id
+
                 # determine rest seconds. Either from exercise, or max from week!
                 if "rest_seconds" in ex:
                     block["rest_seconds"] = ex["rest_seconds"]
 
                 rest_seconds = -1
-                for s in week["sets"]: # get rest time from max rest_seconds
-                    rest_seconds = max(rest_seconds, s["rest_seconds"])
+                if "main" in ex:
+                    for s in week["sets"]: # get rest time from max rest_seconds
+                        rest_seconds = max(rest_seconds, s["rest_seconds"])
 
-                if rest_seconds > 0:
-                    block["rest_seconds"] = rest_seconds
+                    if rest_seconds > 0:
+                        block["rest_seconds"] = rest_seconds
 
                 exs.append(block)
 
