@@ -7,9 +7,9 @@ A Hevy Pro subscription is required to use Hevy's API. Once you have a Pro subsc
 
 First, you must clone or download this repository to somewhere on your computer. You can use git to clone, or just download the repo as a zip and unzip it to a location of your choosing.
 
-Once you have downloaded the repo, you must install it using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following command in your terminal (all operating systems come with terminals) in the location of the downloaded repo:
+Once you have downloaded the repo, you must set up the app using Python. Python is a programming language available for free on all computers. Once Python is installed, execute the following command in your terminal (all operating systems come with terminals) in the location of the downloaded repo:
 
-python bootstrap.py
+python configure.py
 
 Once you have done that, look at the files in user/. These are specific to you and your gym. You can open and edit them in your favourite text editor (you can even use notepad).
 * secrets.toml must contain your Hevy API key, once you have generated it. Enter your name and corresponding Hevy API key here.
